@@ -90,6 +90,32 @@ html, body {
   gap: 0.5rem;
   backdrop-filter: blur(8px);
 }
+#toggle-sound {
+  position: fixed;
+  right: max(1.2rem, env(safe-area-inset-right));
+  top: calc(max(1.2rem, env(safe-area-inset-top)) + 3.1rem);
+  z-index: 5;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bone);
+  background: var(--panel-bg);
+  border: 1px solid var(--teal);
+  border-radius: 999px;
+  padding: 0.55rem 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  backdrop-filter: blur(8px);
+}
+#toggle-sound:hover { border-color: var(--sun); }
+#toggle-sound:focus-visible { outline: 2px solid var(--sun); outline-offset: 2px; }
+#toggle-sound .wave { opacity: 0.25; transition: opacity 0.3s; }
+#toggle-sound[aria-pressed='true'] { border-color: var(--sun); color: var(--sun); }
+#toggle-sound[aria-pressed='true'] .wave { opacity: 1; }
+
 #toggle-panel .dot {
   width: 0.55rem;
   height: 0.55rem;

@@ -27,11 +27,17 @@
     <span class="dot"></span> field&nbsp;instruments
   </button>
 
+  <button id="toggle-sound" type="button" aria-pressed="false" aria-label="Toggle the drone">
+    <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path class="spk" d="M3 9v6h4l5 4V5L7 9H3z" fill="currentColor"/><path class="wave" d="M16 8.5c1.4 1 2.2 2.1 2.2 3.5s-.8 2.5-2.2 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    <span id="sound-label">drone&nbsp;off</span>
+  </button>
+
   <aside class="panel" aria-label="Signal readout and permissions">
     <p id="seed" class="seed"></p>
     <div id="inks" class="inks"></div>
 
     <h2>signals in the print</h2>
+    <p class="hint">The drone is the same interference you're watching: oscillator pairs detuned by each grating's beat frequency — moiré for your ears. RAM sets the reverb tail, tilt is vibrato, the closest face pans the stereo field.</p>
     <div id="readout" class="readout"></div>
     <p class="fps-line">draw rate <span id="fps">— hz</span> · feeds back into line weight</p>
 

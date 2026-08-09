@@ -21,6 +21,17 @@ Grant it more and it comes further alive:
 
 Even your frame rate is a signal: a struggling machine draws heavier lines.
 
+## The drone
+
+Tap the sound toggle and the moiré becomes audible. Beating oscillators
+are the acoustic version of interference patterns: each voice is a pair
+of oscillators detuned by the beat frequency of the *same gratings you're
+watching*. Your GPU tunes the root, cores/RAM/network pick the chord from
+a desert scale, RAM sets the reverb tail (generated impulse, no samples),
+battery sets the filter-sweep tempo. Live: the closest face pans the
+stereo field and opens the filter, proximity deepens the reverb, gyro
+tilt is vibrato depth, and a struggling frame rate grits up the saw voice.
+
 Palette: seeded from a desert-acid ink pool — Joshua Tree, Warhol silkscreen,
 Basquiat, Marfa, Endless Summer. After Vera Molnár.
 

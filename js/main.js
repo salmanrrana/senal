@@ -5,12 +5,13 @@ import { collectSignals } from './signals.js';
 import { buildGenome, liveState } from './pattern.js';
 import { Renderer } from './renderer.js';
 import { Tracker } from './tracker.js';
+import { Drone } from './audio.js';
 import { mulberry32 } from './signals.js';
 
 const canvas = document.getElementById('field');
 const $ = (id) => document.getElementById(id);
 
-let signals, genome, renderer;
+let signals, genome, renderer, drone;
 const tracker = new Tracker();
 
 // FPS meter — itself a signal fed back into the pattern.
@@ -115,6 +116,28 @@ function bindUI() {
     document.body.classList.toggle('panel-open');
   });
 
+  $('toggle-sound').addEventListener('click', async () => {
+    const btn = $('toggle-sound');
+    if (!drone) {
+      drone = new Drone(genome, signals);
+      window.__senalDrone = drone; // debug/testing handle
+    }
+    if (drone.running) {
+      await drone.stop();
+      btn.setAttribute('aria-pressed', 'false');
+      $('sound-label').textContent = 'drone off';
+    } else {
+      try {
+        await drone.start();
+        btn.setAttribute('aria-pressed', 'true');
+        $('sound-label').textContent = 'drone on';
+      } catch (e) {
+        console.error('audio failed:', e);
+        $('sound-label').textContent = 'no audio';
+      }
+    }
+  });
+
   // Mouse/touch as stand-in person when camera is off.
   window.addEventListener('pointermove', (e) => {
     tracker.pointTo(e.clientX / innerWidth, e.clientY / innerHeight);
@@ -180,6 +203,7 @@ function frame(now) {
     time: now / 1000,
   });
   renderer.draw(state);
+  if (drone) drone.update(state, dt);
   requestAnimationFrame(frame);
 }
 
