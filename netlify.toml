@@ -1,0 +1,10 @@
+[build]
+  publish = "."
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Explicitly allow the sensors the piece can use, same-origin only.
+    Permissions-Policy = "camera=(self), geolocation=(self), gyroscope=(self), accelerometer=(self), magnetometer=(self)"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>SEÑAL — your machine, printed as interference</title>
+  <meta name="description" content="A living moiré grown from your device's signals. Every machine prints a different specimen." />
+  <meta name="theme-color" content="#0e081a" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='none' stroke='%23fe2d92' stroke-width='2'/><circle cx='16' cy='16' r='9' fill='none' stroke='%2300cec9' stroke-width='2'/><circle cx='16' cy='16' r='4' fill='%23ffcc00'/></svg>" />
+</head>
+<body>
+  <canvas id="field" aria-label="Living moiré pattern generated from this device's signals"></canvas>
+
+  <noscript><div class="nogl">SEÑAL needs JavaScript — it reads your machine to draw itself.</div></noscript>
+  <div id="nogl" class="nogl" hidden>This browser has no WebGL2 — SEÑAL has nothing to print with.</div>
+
+  <header class="mast">
+    <h1>SEÑAL</h1>
+    <p class="tag">your machine, printed as interference</p>
+  </header>
+
+  <button id="toggle-panel" type="button" aria-label="Toggle field instrument panel">
+    <span class="dot"></span> field&nbsp;instruments
+  </button>
+
+  <aside class="panel" aria-label="Signal readout and permissions">
+    <p id="seed" class="seed"></p>
+    <div id="inks" class="inks"></div>
+
+    <h2>signals in the print</h2>
+    <div id="readout" class="readout"></div>
+    <p class="fps-line">draw rate <span id="fps">— hz</span> · feeds back into line weight</p>
+
+    <h2>let it see more</h2>
+    <p class="hint">Nothing here leaves your device. Signals are drawn, never sent.</p>
+
+    <button id="perm-camera" type="button" class="pill" data-state="off">
+      <span class="pill-name">camera</span>
+      <span class="pill-what">finds the closest face — their position steers the ripples, real light shifts night&nbsp;→&nbsp;day</span>
+      <span class="pill-status">grant</span>
+    </button>
+
+    <button id="perm-motion" type="button" class="pill" data-state="off">
+      <span class="pill-name">motion</span>
+      <span class="pill-what">gyroscope tilt shears the gratings as you move the device</span>
+      <span class="pill-status">grant</span>
+    </button>
+
+    <button id="perm-geo" type="button" class="pill" data-state="off">
+      <span class="pill-name">location</span>
+      <span class="pill-what">latitude &amp; longitude fold the space — this print only exists where you are</span>
+      <span class="pill-status">grant</span>
+    </button>
+
+    <footer class="colophon">
+      after Vera Molnár · desert radio · no analytics, no storage, no network calls with your data
+    </footer>
+  </aside>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
