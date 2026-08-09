@@ -105,8 +105,14 @@ export function buildGenome(signals) {
   // Warp: timezone offset bends space; languages count adds swirl.
   const warp = span(signals.tzOffset / 720, 0.05, 0.5) + signals.langs * 0.015;
 
+  // Trip geometry: petal count of the kaleidoscope fold comes from CPU
+  // cores (odd counts look more organic), hue-crawl speed from network.
+  const kaleido = [5, 7, 9, 11][signals.cores % 4] || 7;
+  const hueSpeed = 0.25 + span(signals.downlink / 20, 0.05, 0.35);
+
   return {
     seed, salt, world, inks, gratings, tempo, bands, warp,
+    kaleido, hueSpeed,
     ground: GROUNDS[world],
     grainAmp: 0.05 + drift() * 0.05,
   };
