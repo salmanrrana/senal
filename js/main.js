@@ -10,6 +10,7 @@ import { mulberry32 } from './signals.js';
 
 const canvas = document.getElementById('field');
 const $ = (id) => document.getElementById(id);
+const MODE = document.body.dataset.mode === 'moire' ? 'moire' : 'trip';
 
 let signals, genome, renderer, drone;
 const tracker = new Tracker();
@@ -213,7 +214,7 @@ async function boot() {
   wander = mulberry32(genome.seed ^ 0x5eed)();
 
   try {
-    renderer = new Renderer(canvas);
+    renderer = new Renderer(canvas, MODE);
   } catch (e) {
     console.error('renderer failed:', e);
     $('nogl').hidden = false;

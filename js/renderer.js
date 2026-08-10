@@ -208,15 +208,155 @@ void main() {
   outColor = vec4(col, 1.0);
 }`;
 
+// ---- The pure-moiré shader: what the physics actually looks like. ----
+// Three PAIRS of fine line gratings (one ink each). Within a pair the two
+// gratings disagree by ~1.5% in frequency and a hair of angle, and the
+// second grating samples space at a slightly DIFFERENT point of the liquid
+// warp field. Moiré amplifies that tiny disagreement ~30× into huge slow
+// rolling fringes. The lines are real; the blooms are interference.
+const FRAG_MOIRE = `#version 300 es
+precision highp float;
+
+in vec2 v_uv;
+out vec4 outColor;
+
+uniform vec2  u_res;
+uniform float u_time;
+uniform vec2  u_focus;
+uniform float u_proximity;
+uniform float u_dayness;
+uniform float u_geoPhase;
+uniform float u_strain;
+uniform vec2  u_tilt;
+uniform float u_warp;
+uniform float u_grain;
+uniform float u_hue;
+uniform vec3  u_ink0;
+uniform vec3  u_ink1;
+uniform vec3  u_ink2;
+uniform vec3  u_groundNight;
+uniform vec3  u_groundDay;
+uniform vec4  u_g[6];
+
+float hash(vec2 p) {
+  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+
+vec3 hueShift(vec3 c, float a) {
+  const vec3 k = vec3(0.57735);
+  float ca = cos(a), sa = sin(a);
+  return c * ca + cross(k, c) * sa + k * dot(k, c) * (1.0 - ca);
+}
+
+// Anti-aliased line coverage for a phase measured in cycles.
+// duty < 0.5 = thin ink lines on ground, like a printed grating.
+float lineCov(float phase, float duty) {
+  float d = abs(fract(phase) - 0.5) * 2.0;   // 1 at cycle edge, 0 at line center
+  float aa = fwidth(phase) * 1.6 + 1e-4;
+  // When lines get too fine for the screen, fade coverage toward the duty
+  // average instead of aliasing into garbage.
+  float cov = smoothstep(duty + aa, duty - aa, d);
+  float tooFine = smoothstep(0.35, 0.9, aa);
+  return mix(cov, duty, tooFine);
+}
+
+void main() {
+  float aspect = u_res.x / u_res.y;
+  vec2 p = (v_uv * 2.0 - 1.0) * vec2(aspect, 1.0);
+  float t = u_time;
+  float trip = 0.4 + u_proximity * 0.6;
+
+  // Gyro + geo still bend the sheet, gently.
+  p += u_tilt * 0.4;
+  float fold = (u_warp + u_geoPhase) * 0.4;
+  p = vec2(p.x * cos(fold) - p.y * sin(fold), p.x * sin(fold) + p.y * cos(fold));
+
+  // Slight breath — the paper flexes, the lines survive.
+  p *= 1.0 + 0.025 * sin(t * 0.43);
+
+  // Liquid field, used two ways: a whisper of shared warp (alive), and a
+  // DIFFERENTIAL offset between pair members (the moiré driver — a 2px
+  // disagreement becomes a giant rolling wave in the fringes).
+  vec2 w = vec2(
+    sin(p.y * 2.1 + t * 0.50) + sin(p.y * 4.3 - t * 0.27),
+    sin(p.x * 2.5 - t * 0.43) + sin(p.x * 3.7 + t * 0.31)
+  );
+  p += w * 0.012;
+  vec2 dp = w * (0.006 + 0.014 * trip);   // lean in -> fringes roll harder
+
+  vec2 fc = (u_focus * 2.0 - 1.0) * vec2(aspect, 1.0);
+  vec3 ground = mix(u_groundNight, u_groundDay, u_dayness);
+  vec3 col = ground;
+  float duty = 0.5 + u_strain * 0.08;     // struggling machine inks heavier
+
+  // ---------- PAIR A: gpu × cores — linear, the master grating ----------
+  // F is cycles per unit; the screen is ~3.2 units wide, so keep F in the
+  // 35-60 range for 110-190 visible lines — fine, but resolvable.
+  {
+    float F = 28.0 + u_g[0].x * 0.9;
+    vec2 dir0 = vec2(cos(u_g[0].y), sin(u_g[0].y));
+    float dAng = 0.035 + 0.025 * sin(t * 0.11);
+    vec2 dir1 = vec2(cos(u_g[0].y + dAng), sin(u_g[0].y + dAng));
+    float ph0 = dot(p, dir0) * F + u_g[0].z + t * 0.06;
+    float ph1 = dot(p + dp, dir1) * F * (1.015 + 0.008 * sin(t * 0.07)) + u_g[1].z - t * 0.05;
+    float cov = max(lineCov(ph0, duty), lineCov(ph1, duty));
+    vec3 ink = hueShift(u_ink0, sin(t * u_hue * 0.4) * 0.25);
+    col = mix(col, ink, cov * 0.95);
+    // beat envelope — where the two gratings agree, the ground clears;
+    // where they disagree, ink mass doubles. Deepen, don't bleach.
+    float env = 0.5 + 0.5 * cos((ph0 - ph1) * 6.28318 * 0.02);
+    col = mix(col, ink * 0.55, (1.0 - env) * (1.0 - env) * 0.4);
+  }
+
+  // ---------- PAIR B: ram × net — radial rings around the face ----------
+  {
+    float F = 22.0 + u_g[2].x * 0.8;
+    float r0 = length(p - fc);
+    float r1 = length(p + dp - fc);
+    float ph0 = r0 * F + u_g[2].z - t * 0.12;
+    float ph1 = r1 * F * (1.018 + 0.006 * sin(t * 0.09 + 2.0)) + u_g[3].z + t * 0.10;
+    float cov = max(lineCov(ph0, duty), lineCov(ph1, duty));
+    vec3 ink = hueShift(u_ink1, sin(t * u_hue * 0.4 + 2.1) * 0.25);
+    col = mix(col, ink, cov * 0.8);
+    float env = 0.5 + 0.5 * cos((ph0 - ph1) * 6.28318 * 0.02);
+    col = mix(col, ink * 0.55, (1.0 - env) * (1.0 - env) * 0.32);
+  }
+
+  // ---------- PAIR C: screen × load — second linear family ----------
+  {
+    float F = 25.0 + u_g[4].x * 0.7;
+    float baseAng = u_g[4].y + 1.1;
+    vec2 dir0 = vec2(cos(baseAng), sin(baseAng));
+    float dAng = -0.03 + 0.02 * sin(t * 0.13 + 4.0);
+    vec2 dir1 = vec2(cos(baseAng + dAng), sin(baseAng + dAng));
+    float ph0 = dot(p, dir0) * F + u_g[4].z - t * 0.04;
+    float ph1 = dot(p - dp, dir1) * F * 1.012 + u_g[5].z + t * 0.05;
+    float cov = max(lineCov(ph0, duty), lineCov(ph1, duty));
+    vec3 ink = hueShift(u_ink2, sin(t * u_hue * 0.4 + 4.2) * 0.25);
+    col = mix(col, ink, cov * 0.65);
+    float env = 0.5 + 0.5 * cos((ph0 - ph1) * 6.28318 * 0.02);
+    col = mix(col, ink * 0.55, (1.0 - env) * (1.0 - env) * 0.26);
+  }
+
+  // Print grain + focus vignette.
+  float g1 = hash(gl_FragCoord.xy + fract(t) * 100.0);
+  col += (g1 - 0.5) * u_grain * 0.7;
+  vec2 fv = v_uv - u_focus;
+  col *= 1.0 - dot(fv, fv) * 0.18;
+
+  outColor = vec4(col, 1.0);
+}`;
+
 export class Renderer {
-  constructor(canvas) {
+  constructor(canvas, mode = 'trip') {
     this.canvas = canvas;
     const gl = canvas.getContext('webgl2', { antialias: false, alpha: false });
     if (!gl) throw new Error('webgl2-unavailable');
     this.gl = gl;
 
+    const frag = mode === 'moire' ? FRAG_MOIRE : FRAG;
     const prog = gl.createProgram();
-    for (const [type, src] of [[gl.VERTEX_SHADER, VERT], [gl.FRAGMENT_SHADER, FRAG]]) {
+    for (const [type, src] of [[gl.VERTEX_SHADER, VERT], [gl.FRAGMENT_SHADER, frag]]) {
       const sh = gl.createShader(type);
       gl.shaderSource(sh, src);
       gl.compileShader(sh);

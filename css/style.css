@@ -90,6 +90,36 @@ html, body {
   gap: 0.5rem;
   backdrop-filter: blur(8px);
 }
+#mode-link {
+  position: fixed;
+  right: max(1.2rem, env(safe-area-inset-right));
+  top: calc(max(1.2rem, env(safe-area-inset-top)) + 6.2rem);
+  z-index: 5;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--bone);
+  background: var(--panel-bg);
+  border: 1px solid var(--violet);
+  border-radius: 999px;
+  padding: 0.55rem 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  backdrop-filter: blur(8px);
+}
+#mode-link:hover { border-color: var(--sun); }
+#mode-link:focus-visible { outline: 2px solid var(--sun); outline-offset: 2px; }
+#mode-link .dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--violet);
+}
+
 #toggle-sound {
   position: fixed;
   right: max(1.2rem, env(safe-area-inset-right));
