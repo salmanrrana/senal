@@ -8,6 +8,12 @@ density, network speed and latency, page load time, timezone, language,
 battery — hashes them into a seed, and grows six interference gratings from
 it. Every device prints a different specimen. Every visit drifts a little.
 
+## Local checks
+
+Run `npm install` once, then `npm run check:fast` to lint every browser module
+and check the new tooling with Prettier. Installation enables the tracked
+pre-commit hook, including incremental formatting checks for staged source.
+
 Grant it more and it comes further alive:
 
 - **camera** — finds the closest face (biggest face wins); their head position
